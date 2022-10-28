@@ -8,6 +8,7 @@
 ################### ^^^^^^^^^^^^^ DA TESTARE ED AGGIUNGERE ^^^^^^^^^^^^^ ##################
 ###             AGGIUNTA LIBRERIE
 #                      \/
+import shutil
 
 from kivymd.app import MDApp
 from kivy.lang import Builder
@@ -53,7 +54,7 @@ ico = 'SA+1.png'
 temp_ora = 0.0
 tot = 0.0
 temp_data = ''
-ver= '1.1.0' # MODIFICARE SOLO QUI,
+ver= '1.1.6rc' # MODIFICARE SOLO QUI,
 ##
 ################ CONTROLLO SE ESISTE IL FILE NELLA CARTELLA
 ####### ALTRIMENTI VERRA' CREATO     -------------- SE ESISTE GIA' LA CARTELLA, PASSA ALLA CREAZIONE SOLO DEI FILE
@@ -145,12 +146,27 @@ class add(BoxLayout):
 class Main(MDApp):
     print (f'Creazione classe {MDApp()}\nl={l}\n_file_value_list={_file_value_list}\ntemp_date_src_l={temp_date_src_l}\ntot={tot}')
             ## PROVO AD APRIRE IL FILE .TXT
+    tmp_l = []
     try:
         with open(SAF, mode='r') as F:
             l.append(F.readlines())
+            for i in l:
+                for j in i:
+                    tmp_l.append(j)
+            if int(tmp_l[0])< int(Y):
+                l.clear()
+                shutil.copy(SAF,SAF+str(int(Y)-1))
+                with open(SAF, mode='w') as F:
+                    F.write(f'{Y}\n')
+                l.append(f'{Y}\n')
+                nydialog = MDDialog(title=Y, text=f'BUON ANNO!!!')
+                nydialog.open()
+
     except FileNotFoundError: # Se non lo trova ne crea uno iniziando dall'anno corrente
+        l.clear()
         with open(SAF, mode='a') as F:
             F.write(f'{Y}\n')
+        l.append(f'{Y}\n')
                         ## DA AGGIUNGERE: Possibilità di ricominciare da un anno nuovo
                         #                 (altrimenti ci sarà una somma con le ore dei mesi addietro)
     def build(self):
@@ -177,8 +193,8 @@ class Main(MDApp):
 				title=f'VER. {ver} (Beta)',
 				type='simple',
 				text='''
-- Aggiunta la possibilità di aggiungere giorni ed ore al mese corrente
-- Risolto qualche bug minore
+- Aggiunta: Il file si resetta con l'arrivo del nuovo anno,
+copiando il file dell'anno precedente 
 ''' )
             self.dialog.open()
         elif switch == 2:
@@ -197,7 +213,7 @@ Contatto:
     andrewdm91@gmail.com
     
 Github:
-    https://github.com
+    https://github.com/noxsilente/StraordinApp
             
                 !!! Attenzione !!!
 Se si effettuano operazioni di eliminazione,
@@ -213,6 +229,10 @@ Il bug verrà risolto presto
                 type='simple',
                 ##### TODO:  CREARE LOG SU FILE !!!!!!!
                 text=f'''
+1.1.6 rc
+- Aggiunta: Il file si resetta con l'arrivo del nuovo anno,
+copiando il file dell'anno precedente 
+
 1.1.0
 - Aggiunta la possibilità di aggiungere giorni ed ore al mese corrente
 - Risolto qualche bug minore
@@ -360,14 +380,13 @@ con il tema Light
             </Config>
                     ''')
 
-
     def on_start(self):
         '''
         Funzione che parte all'avvio dell'app
         :return:
         '''
         print('Richiamo sottoclasse <on_start>')
-        global temp_data, temp_ora, tot
+        global temp_data, temp_ora, tot, _ny_
         if ver != ver_: # Dialog che appare quando con l'aggiornamento della versione
         # Scrivo sul file delle configurazioni la nuova versione
             with open(CFG, mode='w') as C:  # Così non riappare le volte successive
