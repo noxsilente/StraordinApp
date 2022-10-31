@@ -1,7 +1,5 @@
+#                   LAYOUT DELL'APP
 KV = '''
-        
-# <DrawerLabelItem@MDNavigationDrawerItem>
-#     icon_color: "#4a4939"
 MDNavigationLayout:
     MDTopAppBar:
         pos_hint: {'center_x': .5, 'center_y':.95}
@@ -66,12 +64,6 @@ MDNavigationLayout:
                 pos_hint: {'center_x':.5, 'center_y':.4}
                 RelativeLayout:
                     pos: self.parent.pos
-                    # MDTextField:
-                    #     id: TXT_
-                    #     pos_hint: {'x':0.01, 'y':0.7}
-                    #     size_hint_x: 0.35
-                    #     input_filter: 'float'
-                    #     required: True
                     MDRectangleFlatButton:
                         id: IN_B
                         pos_hint: {'x':0.1, 'y':0.85}
@@ -80,11 +72,6 @@ MDNavigationLayout:
                         on_press: 
                             #nav_d.set_state('close')
                             app.date_dialog()
-                    # BoxLayout:
-                    #     orientation: 'vertical'
-                    #     pos_hint: {'center_x':.5, 'center_y':.4}
-                    #     RelativeLayout:
-                    #         pos: self.parent.pos
                     MDLabel:
                         id: one_src_date 
                         pos_hint: {'x':.0, 'y':0.1}
@@ -147,8 +134,18 @@ MDNavigationLayout:
                 font_style: 'H6'
                 icon: 'plus'
                 line_color: 0,0,0,0
+                text_color: '#007f00'
                 #on_press: app.not_implemented(1)
                 on_press: app._add_()
+            MDRectangleFlatIconButton:
+                id: export
+                #size_hint_x: .5
+                text: 'Esporta'
+                font_style: 'H6'
+                icon: 'file-export-outline'
+                line_color: 0,0,0,0
+                text_color: '#007f00'
+                on_press: app.date_dialog2()
             MDRectangleFlatIconButton:
                 id: info
                 #size_hint_x: .5
@@ -211,5 +208,43 @@ MDNavigationLayout:
         size_hint_x: .1
         id: ore
         hint_text: 'Inserisci il numero di ore'  
-    
 '''
+
+#           STRINGHE CHE RIEMPIONO INUTILMENTE IL FILE MAIN.PY
+dial='''
+1.3.2rc 
+- BugFix vari 
+
+1.3 
+-Creazione di un database (più pesante ma con meno errori)
+-Possibilità di esportare la lista ore di un mese su un file di testo
+
+1.2.6 
+- Aggiunta la possibilità di aggiungere giorni ed ore al mese corrente
+- Risolto qualche bug minore
+
+1.1.0 - BETA
+- Aggiunta la possibilità di aggiungere giorni ed ore al mese corrente
+
+0.13.2
+- Risolti bug relativi allo sdoppiamento nel file e all visualizzazione nell'app
+- Tolta la possibilità di modificare le ore nei mesi precedenti
+
+0.13
+- Possibilità di modificare l'orario di una determinata data
+
+0.12.2
+- BugFix vari (Lavorazione sulle liste)
+
+0.12
+- BugFix vari (Tema + Posizioni + Funzionamento)
+- Possibilità di eliminare un elemento dall'elenco
+  (La modifica non è ancora implementata) 
+    
+0.11.3
+- Risolto bug colore ore totali all'avvio dell'app
+con il tema Light 
+- Cambio del colore per i temi + Cambio automatico festività
+- Risolto bug mancato inserimento delle ore 
+- Risolto bug sui mesi privi di straordinari nella pagina di ricerca
+                                '''
