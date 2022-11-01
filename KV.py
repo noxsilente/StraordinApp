@@ -71,7 +71,7 @@ MDNavigationLayout:
                         text:'CERCA'
                         on_press: 
                             #nav_d.set_state('close')
-                            app.date_dialog()
+                            app.date_dialog(1)
                     MDLabel:
                         id: one_src_date 
                         pos_hint: {'x':.0, 'y':0.1}
@@ -144,8 +144,7 @@ MDNavigationLayout:
                 font_style: 'H6'
                 icon: 'file-export-outline'
                 line_color: 0,0,0,0
-                text_color: '#007f00'
-                on_press: app.date_dialog2()
+                on_press: app.date_dialog(2)
             MDRectangleFlatIconButton:
                 id: info
                 #size_hint_x: .5
@@ -207,12 +206,31 @@ MDNavigationLayout:
         input_filter: 'float'
         size_hint_x: .1
         id: ore
-        hint_text: 'Inserisci il numero di ore'  
+        hint_text: 'Inserisci il numero di ore'
+<Cerca>
+    orientation: 'vertical'
+    spacing: '12dp'
+    size_hint_y: None
+    height: '120dp'
+    ScrollView:
+        id: ss_w_
+        do_scroll_x: False
+        pos_hint: {'x':0, 'y':.2}
+        size_hint_y: 0.5
+        size_hint_x: 0.7
+        MDList:
+            id: Cerca_list
+
 '''
 
 #           STRINGHE CHE RIEMPIONO INUTILMENTE IL FILE MAIN.PY
 dial='''
-1.3.2rc 
+1.4rc
+- BugFix vari
+- Nel menu ricerca/esporta è possibile ricavare il mese tramite una lista
+  e non tramite una Date Dialog
+
+1.3.2
 - BugFix vari 
 
 1.3 

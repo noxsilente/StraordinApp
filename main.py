@@ -41,6 +41,20 @@ SAF = 'Straordinari.db'
 CFG = 'Config.xml'
 
 ##                                   DEFINISCO LE VARIABILI
+month_list = [
+            'Gennaio',
+            'Febbraio',
+            'Marzo',
+            'Aprile',
+            'Maggio',
+            'Giugno',
+            'Luglio',
+            'Agosto',
+            'Settembre',
+            'Ottobre',
+            'Novembre',
+            'Dicembre'
+        ] # lista dei mesi per effettuare la ricerca / esportazione
 l = [] # lista per appendere i valori dei file di testo -- DA TENERE SOLO PER I TEST O PER CHI HA UTILIZZATO VERSIONI PRECEDENTI
 _file_value_list = [] # lista per il contenuto del file -- DA TENERE SOLO PER I TEST O PER CHI HA UTILIZZATO VERSIONI PRECEDENTI
 m = time.strftime('%m') # MESE ATTUALE
@@ -50,13 +64,13 @@ Y = time.strftime('%Y') # ANNO ATTUALE
 ico = 'SA+1.png' # ICONA PER L'APP
 temp_ora = 0.0 # FLOAT TEMPORANEA PER L'ACQUISIZIONE DELL'ORA
 tot = 0.0 # FLOAT PER IL CALCOLO DELLE ORE TOTALI
-ver= '1.3.2' # MODIFICARE SOLO QUI, VERSIONE DELL'APP
+ver= '1.4' # MODIFICARE SOLO QUI, VERSIONE DELL'APP
 ##   CONTROLLO SE ESISTE IL FILE NELLA CARTELLA, ALTRIMENTI VERRA' CREATO
 ##   SE ESISTE GIA' LA CARTELLA, PASSA ALLA CREAZIONE ESCLUSIVA DEI FILE
 try:
     f = open(CFG,'r')
     f.close()
-except FileNotFoundError:                           ## DA DECOMMENTARE SOLO PER I TEST
+except FileNotFoundError:                           ## DA COMMENTARE SOLO PER I TEST
     try:
         mkdir('/storage/emulated/0/StraordinApp/')
     except FileExistsError:
@@ -99,7 +113,7 @@ _theme = cf # Variabile per il tema
 ## Configurazione del tema in app
 if cf == 'Dark':
     _theme = 'Dark'
-    if _data == '31/10': # Tema prestabilito per halloween
+    if _data == '31/10': # Tema prestabilito per Halloween
         _palette = 'Orange'
     else:
         _palette = 'Gray'
@@ -170,6 +184,9 @@ class modifica(BoxLayout):
     pass
 class add(BoxLayout):
     pass
+class Cerca(BoxLayout):
+    pass
+
 ################################## CREAZIONE DELLA CLASSE PER L'APP ##################################################
 class Main(MDApp):
     def build(self):
@@ -201,7 +218,9 @@ class Main(MDApp):
 				title=f'VER. {ver}rc',
 				type='simple',
 				text='''
-- BugFix vari 
+- BugFix vari
+- Nel menu ricerca/esporta è possibile ricavare il mese tramite una lista
+  e non tramite una Date Dialog
 ''' )
             self.dialog.open()
         elif switch == 2:
@@ -223,13 +242,12 @@ StraordinApp Versione {ver}rc
 #GitHub:
     https://github.com/noxsilente/StraordinApp
                     '''
-                 ) ## TODO Link alla e-mail
+                 )
             self.dialog.open()
         elif switch == 3:
             self.dialog = MDDialog(
                 title=f'Logs',
                 type='simple',
-                ##### TODO:  CREARE LOG SU FILE !!!!!!!
                 text=dial
             )
             self.dialog.open()
@@ -354,7 +372,7 @@ StraordinApp Versione {ver}rc
         self.root.ids.MDND.color = _text                          ####
         self.root.ids.KV_ver.text = f'versione: {ver}'
         self.root.ids.data.title = f'StraordinApp - {_data}'
-        for row in cursor.execute(f'SELECT gg,mm,ora FROM straordinari WHERE mm ={m}'):
+        for row in cursor.execute(f'SELECT * FROM straordinari WHERE mm ={m}'):
             self.root.ids._oli.add_widget(OneLineListItem(text=f'{row[0]}/{row[1]} +{row[2]}', on_release=lambda
                         x=enumerate(row), g=row[0], M=row[1]: self.menu_(x, g,M, 1)))
             if row[0] == d:
@@ -485,6 +503,7 @@ StraordinApp Versione {ver}rc
         self.root.ids.src_tot.text_color = _text
         self.root.ids.tot.text_color = _text
         self.root.ids.src.text_color = _text
+        self.root.ids.export.text_color= _text
         self.root.ids.info.text_color = _text
         self.root.ids.MDND_.color = _text
         self.root.ids.MDND.color = _text
@@ -492,49 +511,41 @@ StraordinApp Versione {ver}rc
         self.root.ids.MDRFIB.text = _theme
         self.root.ids.nav_d.set_state(new_state='close', animation=True)
         tot_write(self, m,1,_text)
-    def Search(self,instance,value,range):
-        date_get = value  # prendo il valore intero della data
-        _date_get = str(date_get)  # lo trasformo in stringa
-        list_date = _date_get.split('-')  # riordino in una lista
-        dd = list_date[2]  # ne ricavo il secondo
-        mm = list_date[1]  # e il primo
-        temp_date_src = dd+'/'+mm # sistemo la data in un modo standard
-        for row in cursor.execute(f'SELECT gg,mm,ora FROM straordinari WHERE mm = {mm}'):
-                self.root.ids._src_date.add_widget(OneLineListItem
-                            (text=f'{row[0]}/{row[1]} +{row[2]}', on_press=lambda x=enumerate(row): self.menu_(x, dd, mm, 2)))
-        tot_write(self, mm, 2)
-    def export(self,instance,value,range ):
-        # creo una lista per i mesi in chiaro
-        month_list=[
-            'Gennaio',
-            'Febbraio',
-            'Marzo',
-            'Aprile',
-            'Maggio',
-            'Giugno',
-            'Luglio',
-            'Agosto',
-            'Settembre',
-            'Ottobre',
-            'Novembre',
-            'Dicembre'
-        ]
-        date_get = value  # prendo il valore intero della data
-        _date_get = str(date_get)  # lo trasformo in stringa
-        list_date = _date_get.split('-')  # riordino in una lista
-        mm = list_date[1]  # prelevo il mese
-        temp_list = []
-        for row in cursor.execute(f'SELECT * FROM straordinari WHERE mm=\'{mm}\''):
-            temp_list.append(f'{str(row[0])}/{str(row[1])} +{str(row[2])}')
-### DECOMMENTARE PER L'APP
-        #with open(f'/storage/emulated/0/StraordinApp/{str(month_list[int(mm) - 1])}-{Y}.txt', mode='w') as F:
-        with open(f'{str(month_list[int(mm)-1])}-{Y}.txt', mode='w') as F:
-            F.writelines(temp_list)
-        self.d = MDDialog(title=f'{str(month_list[int(mm)-1])}-{Y}.txt',
-                          text='FILE ESPORTATO SU:\n/storage/emulated/0/StraordinApp/')
-        self.d.open()
-    def on_cancel(self,instance,value): # Se viene cancellata l'operazione di ricerca (è necessario)
-        self.root.ids.one_src_date.text = ''
+    def Search_export(self,value,type):
+        '''
+        Trova nel database il mese in base al valore ricevuto
+        :param value:
+        Seleziono che cosa devo fare: se ricerca o esportazione su file
+        :param type:
+        :return:
+        '''
+        self.date_dial.dismiss()
+        mm=value+1 # aggiungo 1 per compensare l'index il quale parte da 0
+        if mm <10: # se il valore è inferiore a 10 devo aggiungere '0' alla stringa per fare la ricerca nel database
+            mm='0'+str(mm)
+        else:
+            mm= str(mm)
+    ##### RICERCA DEL MESE SU APPOSITO SCREEN
+        if type==1:
+            self.root.ids._src_date.clear_widgets()
+            for row in cursor.execute(f'SELECT * FROM straordinari'):
+                if row[1]==mm:
+                    self.root.ids._src_date.add_widget(OneLineListItem
+                                (text=f'{row[0]}/{row[1]} +{row[2]}', on_press=lambda x=enumerate(row): self.menu_(x, row[0], mm, 2)))
+            tot_write(self, mm, 2)
+    ##### ESPORTAZIONE DEL MESE SU FILE TXT
+        elif type==2:
+            temp_list = []
+            for row in cursor.execute(f'SELECT gg,mm,ora FROM straordinari'):
+                if row[1] == mm:
+                    temp_list.append(f'{str(row[0])}/{str(row[1])} +{str(row[2])}')
+            ### DECOMMENTARE PER L'APP
+            # with open(f'/storage/emulated/0/StraordinApp/{str(month_list[int(mm) - 1])}-{Y}.txt', mode='w') as F:
+            with open(f'{str(month_list[int(mm) - 1])}-{Y}.txt', mode='w') as F:
+                F.writelines(temp_list)
+            self.d = MDDialog(title=f'{str(month_list[int(mm) - 1])}-{Y}.txt',
+                              text='FILE ESPORTATO SU MEMORIA INTERNA:\n\n/storage/emulated/0/StraordinApp/')
+            self.d.open()
     def return_(self):
         '''
         Rimette l'icona allo stato originale, tornando alla schermata iniziale con tutte le sue variabili
@@ -547,15 +558,14 @@ StraordinApp Versione {ver}rc
         self.root.ids.nav_d.set_state(new_state='close')
         self.root.ids.S_M.current = 'M'
         state = True # Riporto la booleana allo stato iniziale
-    def date_dialog(self):# Istanza per aprire il dialog relativo alla ricerca per data
-        date_dialog = MDDatePicker(day=int(d), month=int(m), year=int(Y))
-        date_dialog.bind(on_save=self.Search, on_cancel=self.on_cancel)
-        date_dialog.open()
-    def date_dialog2(self):  # Istanza per aprire il dialog relativo alla ricerca per data
-        Snackbar(text='Scegli il mese da esportare').open()
-        date_dialog = MDDatePicker(day=int(d), month=int(m), year=int(Y))
-        date_dialog.bind(on_save=self.export, on_cancel=self.on_cancel)
-        date_dialog.open()
+    def date_dialog(self,id):# Istanza per aprire il dialog relativo alla ricerca per mese
+        self.date_dial= MDDialog(
+            title= 'Seleziona il Mese: ',
+            type= 'custom',
+            content_cls=Cerca(), )
+        for i in range(len(month_list)): # Aggiungo i widget con il nome del mese
+            self.date_dial.content_cls.ids.Cerca_list.add_widget(OneLineListItem(text=month_list[i], on_release=lambda x, i=i, id=id: self.Search_export(i,id) ))
+        self.date_dial.open()
     def Nav_Change(self):
         '''
         Porta alla pagina di ricerca cambiando l'icona (da 'magnify' a 'arrow-u-left-top')
