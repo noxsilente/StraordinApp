@@ -64,7 +64,7 @@ Y = time.strftime('%Y') # ANNO ATTUALE
 ico = 'SA+1.png' # ICONA PER L'APP
 temp_ora = 0.0 # FLOAT TEMPORANEA PER L'ACQUISIZIONE DELL'ORA
 tot = 0.0 # FLOAT PER IL CALCOLO DELLE ORE TOTALI
-ver= '1.4' # MODIFICARE SOLO QUI, VERSIONE DELL'APP
+ver= '1.4.1' # MODIFICARE SOLO QUI, VERSIONE DELL'APP
 ##   CONTROLLO SE ESISTE IL FILE NELLA CARTELLA, ALTRIMENTI VERRA' CREATO
 ##   SE ESISTE GIA' LA CARTELLA, PASSA ALLA CREAZIONE ESCLUSIVA DEI FILE
 try:
@@ -131,8 +131,8 @@ cursor = connect.cursor()
 # SE non esiste creo la tabella, aprendo il file TXT, inserendo i valori nella tabella (giorno,mese,ora) in formato stringa
 ## In assenza del file TXT la tabella sarà stata creata ma vuota
 try:
-    cursor.execute('create table straordinari (gg text, mm text, ora text)')
-    #with open('/storage/emulated/0/StraordinApp/Straordinari.txt', 'r') as F:
+    cursor.execute('create table straordinari (gg text, mm text, ora text)')         # <------
+    #with open('/storage/emulated/0/StraordinApp/Straordinari.txt', 'r') as F:       # <------
     with open('straordinari.txt', 'r') as F:
         l=F.readlines()
         for i in l:
@@ -218,9 +218,8 @@ class Main(MDApp):
 				title=f'VER. {ver}rc',
 				type='simple',
 				text='''
-- BugFix vari
-- Nel menu ricerca/esporta è possibile ricavare il mese tramite una lista
-  e non tramite una Date Dialog
+- Non verranno più esportati i file se i mesi sono privi di 
+  ore straordinarie
 ''' )
             self.dialog.open()
         elif switch == 2:
@@ -351,7 +350,10 @@ StraordinApp Versione {ver}rc
                 <bg n="" bg="">Background</bg> 
             </Config>
                     ''')
-        cursor.close()
+        try:
+            cursor.close()
+        except:
+            pass
         connect.close()
     def on_start(self):
         '''
@@ -539,13 +541,18 @@ StraordinApp Versione {ver}rc
             for row in cursor.execute(f'SELECT gg,mm,ora FROM straordinari'):
                 if row[1] == mm:
                     temp_list.append(f'{str(row[0])}/{str(row[1])} +{str(row[2])}')
+            if len(temp_list)==0:
+                self.d = MDDialog(title=f'{str(month_list[int(mm) - 1])}-{Y}',
+                                  text='NON CI SONO STRAORDINARI IN QUESTO MESE')
+                self.d.open()
             ### DECOMMENTARE PER L'APP
-            # with open(f'/storage/emulated/0/StraordinApp/{str(month_list[int(mm) - 1])}-{Y}.txt', mode='w') as F:
-            with open(f'{str(month_list[int(mm) - 1])}-{Y}.txt', mode='w') as F:
-                F.writelines(temp_list)
-            self.d = MDDialog(title=f'{str(month_list[int(mm) - 1])}-{Y}.txt',
-                              text='FILE ESPORTATO SU MEMORIA INTERNA:\n\n/storage/emulated/0/StraordinApp/')
-            self.d.open()
+            else:
+                # with open(f'/storage/emulated/0/StraordinApp/{str(month_list[int(mm) - 1])}-{Y}.txt', mode='w') as F:  # <------
+                with open(f'{str(month_list[int(mm) - 1])}-{Y}.txt', mode='w') as F:             # <------
+                    F.writelines(temp_list)
+                self.d = MDDialog(title=f'{str(month_list[int(mm) - 1])}-{Y}.txt',
+                                  text='FILE ESPORTATO SU MEMORIA INTERNA:\n\n/storage/emulated/0/StraordinApp/')
+                self.d.open()
     def return_(self):
         '''
         Rimette l'icona allo stato originale, tornando alla schermata iniziale con tutte le sue variabili

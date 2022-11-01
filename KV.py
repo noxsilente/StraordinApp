@@ -225,7 +225,11 @@ MDNavigationLayout:
 
 #           STRINGHE CHE RIEMPIONO INUTILMENTE IL FILE MAIN.PY
 dial='''
-1.4rc
+1.4.1rc
+- Non verranno più esportati i file se i mesi sono privi di 
+  ore straordinarie
+  
+1.4
 - BugFix vari
 - Nel menu ricerca/esporta è possibile ricavare il mese tramite una lista
   e non tramite una Date Dialog
