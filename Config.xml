@@ -1,6 +1,9 @@
 
             <Config>
                 <theme n="" theme="Dark">Tema</theme>
-                <ver n="" ver="1.1.0">Ver</ver> 
+                <ver n="" ver="1.4">Ver</ver>                            
+                <y n="" y="2022">Anno</y>
+                <txt n="" _txt="">TXT Color</txt>
+                <bg n="" bg="">Background</bg> 
             </Config>
                     
