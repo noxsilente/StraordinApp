@@ -102,11 +102,11 @@ MDNavigationLayout:
         BoxLayout:
             anchor: 'left'
             orientation: 'vertical'
-            pos_hint: {'center_x': .5, 'center_y':.85}
+            pos_hint: {'center_x': .5, 'center_y':.5}
             spacing: '10dp'
             Image:
                 size_hint: 1, None
-                size: '70dp', '70dp'
+                size: '100dp', '100dp'
                 source: 'SA+1.png'
             MDNavigationDrawerDivider:
                 id: MDND_
@@ -168,13 +168,23 @@ MDNavigationLayout:
                 id: MDND
             MDRectangleFlatIconButton:
                 id: KV_ver
-                pos_hint: {'center_x':.5, 'center_y':.9}
+                pos_hint: {'center_x':.5, 'center_y':.1}
                 size_hint_x: 1
                 icon: 'information-outline'
                 line_color: 0,0,0,0
                 text: 'ver.'
                 on_release: app.dial(3) 
-                    #app.not_implemented()                            
+                    #app.not_implemented()  
+            MDRectangleFlatIconButton:
+                id: KV_lic
+                pos_hint: {'center_x':.5, 'center_y':.1}
+                size_hint_x: 1
+                icon: 'license'
+                line_color: 0,0,0,0
+                text: 'GNU General Public License'
+                on_release: app.gnu() 
+                    #app.not_implemented()  
+                                              
                 
 <modifica>
     orientation: 'vertical'
@@ -213,19 +223,52 @@ MDNavigationLayout:
     size_hint_y: None
     height: '120dp'
     ScrollView:
-        id: ss_w_
         do_scroll_x: False
         pos_hint: {'x':0, 'y':.2}
         size_hint_y: 0.5
         size_hint_x: 0.7
         MDList:
             id: Cerca_list
+<License>
+    orientation: 'vertical'
+    spacing: '12dp'
+    size_hint_y: None
+    height: '250dp'
+    ScrollView:
+        do_scroll_x: False
+        pos_hint: {'x':0, 'y':.1}
+        size_hint_y: 0.5
+        size_hint_x: 1
+        MDLabel:
+            id: gnu
+            size_hint_y: None
+            height: self.texture_size[1]
+            text_size: self.width, None
+        #     text:'text'
+<info>
+    orientation: 'vertical'
+    spacing: '12dp'
+    size_hint_y: None
+    height: '120dp'
+    ScrollView:
+        do_scroll_x: False
+        pos_hint: {'x':0, 'y':.1}
+        size_hint_y: 0.5
+        size_hint_x: 1
+        MDLabel:
+            id: info
+            size_hint_y: None
+            height: self.texture_size[1]
+            text_size: self.width, None
 
 '''
 
 #           STRINGHE CHE RIEMPIONO INUTILMENTE IL FILE MAIN.PY
 dial='''
-1.4.1rc
+1.4.3 rc
+- Aggiunta General Public License
+
+1.4.1
 - Non verranno più esportati i file se i mesi sono privi di 
   ore straordinarie
   

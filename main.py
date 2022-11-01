@@ -22,7 +22,7 @@ from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.list import OneLineListItem
 from kivymd.uix.menu import MDDropdownMenu
-from kivymd.uix.pickers import MDDatePicker
+from kivymd.uix.label import MDLabel
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.uix.snackbar import Snackbar
 from KV import KV, dial
@@ -64,7 +64,7 @@ Y = time.strftime('%Y') # ANNO ATTUALE
 ico = 'SA+1.png' # ICONA PER L'APP
 temp_ora = 0.0 # FLOAT TEMPORANEA PER L'ACQUISIZIONE DELL'ORA
 tot = 0.0 # FLOAT PER IL CALCOLO DELLE ORE TOTALI
-ver= '1.4.1' # MODIFICARE SOLO QUI, VERSIONE DELL'APP
+ver= '1.4.3' # MODIFICARE SOLO QUI, VERSIONE DELL'APP
 ##   CONTROLLO SE ESISTE IL FILE NELLA CARTELLA, ALTRIMENTI VERRA' CREATO
 ##   SE ESISTE GIA' LA CARTELLA, PASSA ALLA CREAZIONE ESCLUSIVA DEI FILE
 try:
@@ -186,6 +186,10 @@ class add(BoxLayout):
     pass
 class Cerca(BoxLayout):
     pass
+class License(BoxLayout):
+    pass
+class Info(BoxLayout):
+    pass
 
 ################################## CREAZIONE DELLA CLASSE PER L'APP ##################################################
 class Main(MDApp):
@@ -211,15 +215,18 @@ class Main(MDApp):
     def dial(self, switch):
         '''
         Funzione a parte per la gestione delle dialogs
+        La dialog 'Licenza' prende il testo da un file esterno per riportarlo sulla dialog.
+        Se non c'è il file fa uscire la notifica Snackbar
         :return:
         '''
         if switch == 1:
             self.dialog = MDDialog(
-				title=f'VER. {ver}rc',
+				title=f'VER. {ver}',
 				type='simple',
 				text='''
 - Non verranno più esportati i file se i mesi sono privi di 
   ore straordinarie
+- Aggiunta General Public License
 ''' )
             self.dialog.open()
         elif switch == 2:
@@ -227,7 +234,7 @@ class Main(MDApp):
 				title='Info',
 				type='simple',
 				text=f'''
-StraordinApp Versione {ver}rc
+StraordinApp Versione {ver} rc
 
 #Scritto in Python 3.10.6
     Librerie: 
@@ -246,10 +253,22 @@ StraordinApp Versione {ver}rc
         elif switch == 3:
             self.dialog = MDDialog(
                 title=f'Logs',
-                type='simple',
-                text=dial
-            )
+                type='custom',
+                content_cls=Info())
+            self.dialog.content_cls.ids.info.text= dial
             self.dialog.open()
+        elif switch == 4:
+            try:
+                with open('LICENSE', mode='r') as F:
+                    license = F.read()
+                self.lic = MDDialog(
+                    title='GNU General Public License v3.0',
+                    type='custom',
+                    content_cls=License(), )
+                self.lic.content_cls.ids.gnu.text = license
+                self.lic.open()
+            except FileNotFoundError:
+                self.not_implemented(1)
     def _modifica(self,x, i, G, M):
         '''
         Richiamo a una classe esterna nel file KV
@@ -372,7 +391,7 @@ StraordinApp Versione {ver}rc
         self.root.ids.MDRFIB.text_color = _text                     ## COLORAZIONI IN BASE AL TEMA
         self.root.ids.MDND_.color = _text                           ##
         self.root.ids.MDND.color = _text                          ####
-        self.root.ids.KV_ver.text = f'versione: {ver}'
+        self.root.ids.KV_ver.text = f'versione: {ver} rc'
         self.root.ids.data.title = f'StraordinApp - {_data}'
         for row in cursor.execute(f'SELECT * FROM straordinari WHERE mm ={m}'):
             self.root.ids._oli.add_widget(OneLineListItem(text=f'{row[0]}/{row[1]} +{row[2]}', on_release=lambda
@@ -511,7 +530,7 @@ StraordinApp Versione {ver}rc
         self.root.ids.MDND.color = _text
         self.root.ids.MDRFIB.text_color = _text
         self.root.ids.MDRFIB.text = _theme
-        self.root.ids.nav_d.set_state(new_state='close', animation=True)
+        #self.root.ids.nav_d.set_state(new_state='close', animation=True)
         tot_write(self, m,1,_text)
     def Search_export(self,value,type):
         '''
