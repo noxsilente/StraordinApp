@@ -7,13 +7,13 @@ title = StraordinApp
 package.name = StraordinApp
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.test
+package.domain = com.StraordinApp
 
 # (str) Source code where the main.py live
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas,txt,xml,db
+source.include_exts = py,png,jpg,kv,atlas,txt,xml,db,LICENSE
 
 # (list) List of inclusions using pattern matching
 #source.include_patterns = assets/*,images/*.png
@@ -29,7 +29,7 @@ source.include_exts = py,png,jpg,kv,atlas,txt,xml,db
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 1.4.3
+version = 1.5
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]

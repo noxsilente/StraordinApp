@@ -8,6 +8,9 @@
 ## - Esportare un determinato mese come file di testo                              ##
 ## - Modificare il tema dell'app                                                   ##
 ##                                                                                 ##
+## PER LA COSTRUZIONE DELL'APP E' NECESSARIO LAVORARE SULLE PARTI DA DECOMMENTARE  ##
+## CIOE' QUI SOTTO E NELLA DEF SEARCH/EXPORT      SEGNATI CON  ' <------------- '  ##
+##                                                                                 ##
 ##  andrewdm91@gmail.com                                                           ##
 ##  https://github.com/noxsilente/StraordinApp                                     ##
 #####################################################################################
@@ -22,23 +25,22 @@ from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.list import OneLineListItem
 from kivymd.uix.menu import MDDropdownMenu
-from kivymd.uix.label import MDLabel
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.uix.snackbar import Snackbar
 from KV import KV, dial
 from bs4 import BeautifulSoup
-
+################################################################## MODIFICA
 # DECOMMENTARE PRIMA DI CREARE L'APP
 #   Altrimenti Android non troverà la path
 
-#SAF = '/storage/emulated/0/StraordinApp/Straordinari.db'
-#CFG = '/storage/emulated/0/StraordinApp/Config.xml'
+#SAF = '/storage/emulated/0/StraordinApp/Straordinari.db'       # <-------------
+#CFG = '/storage/emulated/0/StraordinApp/Config.xml'            # <-------------
 
 # DECOMMENTARE PER I TEST
 #   Con windows utilizzare le variabili qui sotto
 
-SAF = 'Straordinari.db'
-CFG = 'Config.xml'
+SAF = 'Straordinari.db'             # <-------------
+CFG = 'Config.xml'                  # <-------------
 
 ##                                   DEFINISCO LE VARIABILI
 month_list = [
@@ -64,13 +66,13 @@ Y = time.strftime('%Y') # ANNO ATTUALE
 ico = 'SA+1.png' # ICONA PER L'APP
 temp_ora = 0.0 # FLOAT TEMPORANEA PER L'ACQUISIZIONE DELL'ORA
 tot = 0.0 # FLOAT PER IL CALCOLO DELLE ORE TOTALI
-ver= '1.4.3' # MODIFICARE SOLO QUI, VERSIONE DELL'APP
+ver= '1.5' # MODIFICARE SOLO QUI, VERSIONE DELL'APP
 ##   CONTROLLO SE ESISTE IL FILE NELLA CARTELLA, ALTRIMENTI VERRA' CREATO
 ##   SE ESISTE GIA' LA CARTELLA, PASSA ALLA CREAZIONE ESCLUSIVA DEI FILE
 try:
     f = open(CFG,'r')
     f.close()
-except FileNotFoundError:                           ## DA COMMENTARE SOLO PER I TEST
+except FileNotFoundError:                           ## DA COMMENTARE SOLO PER I TEST (SE NECESSARIO) # <-------------
     try:
         mkdir('/storage/emulated/0/StraordinApp/')
     except FileExistsError:
@@ -120,7 +122,7 @@ if cf == 'Dark':
     _text = 'white'
 else:
     _theme = 'Light'
-    if _data == '31/10': # Tema prestabilito per halloween
+    if _data == '31/10': # Tema prestabilito per Halloween
         _palette = 'Red'
     else:
         _palette = 'Blue'
@@ -131,15 +133,17 @@ cursor = connect.cursor()
 # SE non esiste creo la tabella, aprendo il file TXT, inserendo i valori nella tabella (giorno,mese,ora) in formato stringa
 ## In assenza del file TXT la tabella sarà stata creata ma vuota
 try:
-    cursor.execute('create table straordinari (gg text, mm text, ora text)')         # <------
-    #with open('/storage/emulated/0/StraordinApp/Straordinari.txt', 'r') as F:       # <------
-    with open('straordinari.txt', 'r') as F:
-        l=F.readlines()
-        for i in l:
-            data= (i[:2],i[3:5],i[7:9])
-            _file_value_list.append(data)
-        cursor.executemany('insert into straordinari values (?,?,?)', _file_value_list)
-        connect.commit()
+    cursor.execute('create table straordinari (gg text, mm text, ora text)')     # DA TOGLIERE PER L'APP
+########################################################################################################
+    #with open('/storage/emulated/0/StraordinApp/Straordinari.txt', 'r') as F:       # <-------------  #
+    with open('straordinari.txt', 'r') as F:                                         # <-------------  #
+        l=F.readlines()                                                                                #
+        for i in l:                                                                                    #
+            data= (i[:2],i[3:5],i[7:])                                                                 #
+            _file_value_list.append(data)                                                              #
+        cursor.executemany('insert into straordinari values (?,?,?)', _file_value_list)                #
+        connect.commit()                                                                               #
+########################################################################################################
 except sqlite3.OperationalError:
     pass
 except FileNotFoundError:
@@ -176,6 +180,8 @@ def tot_write(self,m, id, _text=_text):
         self.root.ids.tot.text = 'Tot.: ' + str(tot)
     elif id == 2:
         self.root.ids.src_tot.text = 'Tot.: ' + str(tot)
+    elif id == 3:
+        return(tot)
 
 actual_day = False # --------- Booleana utilizzata per controllare il giorno attuale
 state = True   # ------------- Booleana utilizzata per l'icona ricerca/indietro
@@ -185,8 +191,6 @@ class modifica(BoxLayout):
 class add(BoxLayout):
     pass
 class Cerca(BoxLayout):
-    pass
-class License(BoxLayout):
     pass
 class Info(BoxLayout):
     pass
@@ -224,9 +228,8 @@ class Main(MDApp):
 				title=f'VER. {ver}',
 				type='simple',
 				text='''
-- Non verranno più esportati i file se i mesi sono privi di 
-  ore straordinarie
-- Aggiunta General Public License
+- Risolti Bug versione precedente
+- Il file esportato contiene anche il totale delle ore
 ''' )
             self.dialog.open()
         elif switch == 2:
@@ -247,6 +250,8 @@ StraordinApp Versione {ver} rc
     
 #GitHub:
     https://github.com/noxsilente/StraordinApp
+    
+ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY DEGLI UTENTI 
                     '''
                  )
             self.dialog.open()
@@ -259,14 +264,11 @@ StraordinApp Versione {ver} rc
             self.dialog.open()
         elif switch == 4:
             try:
-                with open('LICENSE', mode='r') as F:
+                with open('.LICENSE', mode='r') as F:
                     license = F.read()
-                self.lic = MDDialog(
-                    title='GNU General Public License v3.0',
-                    type='custom',
-                    content_cls=License(), )
-                self.lic.content_cls.ids.gnu.text = license
-                self.lic.open()
+                self.root.ids.nav_d.set_state('close')
+                self.root.ids.gnu.text=license
+                self.root.ids.S_M.current='L'
             except FileNotFoundError:
                 self.not_implemented(1)
     def _modifica(self,x, i, G, M):
@@ -462,7 +464,7 @@ StraordinApp Versione {ver} rc
         self.add_dialog.open()
     def writing(self):
         '''
-        Funzione utilizzata per scrivere sul file .TXT l'ora aggiunta tramite il form (TXT)
+        Funzione utilizzata per scrivere sul database
         Viene chiamata alla pressione del tasto 'INSERISCI' (IN_B)
         :return:
         '''
@@ -532,6 +534,7 @@ StraordinApp Versione {ver} rc
         self.root.ids.MDRFIB.text = _theme
         #self.root.ids.nav_d.set_state(new_state='close', animation=True)
         tot_write(self, m,1,_text)
+################################################################## MODIFICA
     def Search_export(self,value,type):
         '''
         Trova nel database il mese in base al valore ricevuto
@@ -566,8 +569,9 @@ StraordinApp Versione {ver} rc
                 self.d.open()
             ### DECOMMENTARE PER L'APP
             else:
-                # with open(f'/storage/emulated/0/StraordinApp/{str(month_list[int(mm) - 1])}-{Y}.txt', mode='w') as F:  # <------
-                with open(f'{str(month_list[int(mm) - 1])}-{Y}.txt', mode='w') as F:             # <------
+                temp_list.append(f'\nTOTALE: {tot_write(self,mm,3)} ORE')
+                # with open(f'/storage/emulated/0/StraordinApp/{str(month_list[int(mm) - 1])}-{Y}.txt', mode='w') as F:  # <-------------
+                with open(f'{str(month_list[int(mm) - 1])}-{Y}.txt', mode='w') as F:             # <-------------
                     F.writelines(temp_list)
                 self.d = MDDialog(title=f'{str(month_list[int(mm) - 1])}-{Y}.txt',
                                   text='FILE ESPORTATO SU MEMORIA INTERNA:\n\n/storage/emulated/0/StraordinApp/')

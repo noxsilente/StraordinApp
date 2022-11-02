@@ -91,7 +91,29 @@ MDNavigationLayout:
                         size_hint_y: 0.5
                         size_hint_x: 0.5
                         MDList:
-                            id: _src_date    
+                            id: _src_date
+        Screen:
+            name: 'L'
+            BoxLayout:
+                orientation: 'vertical'
+                pos_hint: {'x':0, 'y':-.1}
+                MDIconButton:
+                    id: l_b
+                    pos_hint: {'x':.95, 'y':0}
+                    icon: 'arrow-u-left-top'
+                    on_press: S_M.current= 'M'
+                ScrollView:
+                    do_scroll_x: False
+                    pos_hint: {'center_x':.5, 'center_y':.1}
+                    size_hint_y: 0.5
+                    size_hint_x: 1
+                    MDLabel:
+                        id: gnu
+                        size_hint_y: None
+                        size_hint_x: 1
+                        height: self.texture_size[1]
+                        text_size: self.width, None
+                
                 
                     
     MDNavigationDrawer: 
@@ -182,7 +204,7 @@ MDNavigationLayout:
                 icon: 'license'
                 line_color: 0,0,0,0
                 text: 'GNU General Public License'
-                on_release: app.gnu() 
+                on_release: app.dial(4) 
                     #app.not_implemented()  
                                               
                 
@@ -229,22 +251,7 @@ MDNavigationLayout:
         size_hint_x: 0.7
         MDList:
             id: Cerca_list
-<License>
-    orientation: 'vertical'
-    spacing: '12dp'
-    size_hint_y: None
-    height: '250dp'
-    ScrollView:
-        do_scroll_x: False
-        pos_hint: {'x':0, 'y':.1}
-        size_hint_y: 0.5
-        size_hint_x: 1
-        MDLabel:
-            id: gnu
-            size_hint_y: None
-            height: self.texture_size[1]
-            text_size: self.width, None
-        #     text:'text'
+
 <info>
     orientation: 'vertical'
     spacing: '12dp'
@@ -265,7 +272,11 @@ MDNavigationLayout:
 
 #           STRINGHE CHE RIEMPIONO INUTILMENTE IL FILE MAIN.PY
 dial='''
-1.4.3 rc
+1.5 rc
+- Risolti Bug versione precedente
+- Il file esportato contiene anche il totale delle ore
+
+1.4.3
 - Aggiunta General Public License
 
 1.4.1
