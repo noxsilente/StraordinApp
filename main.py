@@ -66,7 +66,7 @@ Y = time.strftime('%Y') # ANNO ATTUALE
 ico = 'SA+1.png' # ICONA PER L'APP
 temp_ora = 0.0 # FLOAT TEMPORANEA PER L'ACQUISIZIONE DELL'ORA
 tot = 0.0 # FLOAT PER IL CALCOLO DELLE ORE TOTALI
-ver= '1.5' # MODIFICARE SOLO QUI, VERSIONE DELL'APP
+ver= '1.6' # MODIFICARE SOLO QUI, VERSIONE DELL'APP
 ##   CONTROLLO SE ESISTE IL FILE NELLA CARTELLA, ALTRIMENTI VERRA' CREATO
 ##   SE ESISTE GIA' LA CARTELLA, PASSA ALLA CREAZIONE ESCLUSIVA DEI FILE
 try:
@@ -81,11 +81,10 @@ except FileNotFoundError:                           ## DA COMMENTARE SOLO PER I 
     with open(CFG, mode='w') as C:
         C.write(f'''
 <Config>
-    <theme n="" theme="Light">Tema</theme>
-    <ver n="" ver="{ver}">Ver</ver> 
-    <y n="" y="{Y}">Anno</y>
-    <txt n="" _txt="">TXT Color</txt>
-    <bg n="" bg="">Background</bg> 
+   <theme n="" theme="Light">Tema</theme>
+   <ver n="" ver="{ver}">Ver</ver>                            
+   <y n="" y="{Y}">Anno</y>
+   <p n="" p="Blue">Palette</p> 
 </Config>
         ''')
 ## RIAPRO IL FILE XML PER PRENDERE I DATI DI CONFIGURAZIONE
@@ -93,9 +92,11 @@ with open(CFG,mode='r') as F:
     thm = F.read()
     data = BeautifulSoup(thm, 'xml')
     theme = data.find('theme')
+    palette= data.find('p')
     version = data.find('ver')
     ver_ = version.get('ver')
     cf = theme.get('theme')
+    _pal = palette.get('p')
     try:
         anno = data.find('y')
         Yy= anno.get('y')
@@ -103,30 +104,26 @@ with open(CFG,mode='r') as F:
         with open(CFG, mode='w') as F: # Scrivo il file di configurazione con le impostazioni aggiornate
             F.write(f'''
             <Config>
-                <theme n="" theme="{cf}">Tema</theme>
-                <ver n="" ver="{ver}">Ver</ver> 
-                <y n="" y="{Y}">Anno</y>
-                <txt n="" _txt="">TXT Color</txt>
-                <bg n="" bg="">Background</bg> 
+               <theme n="" theme="{cf}">Tema</theme>
+               <ver n="" ver="{ver}">Ver</ver>                            
+               <y n="" y="{Y}">Anno</y>
+               <p n="" p="{_pal}">Palette</p> 
             </Config>
         ''')
         Yy = Y
 _theme = cf # Variabile per il tema
+_palette = _pal
 ## Configurazione del tema in app
 if cf == 'Dark':
     _theme = 'Dark'
+    _text= '#f0f0f0'
     if _data == '31/10': # Tema prestabilito per Halloween
         _palette = 'Orange'
-    else:
-        _palette = 'Gray'
-    _text = 'white'
 else:
     _theme = 'Light'
+    _text = '#0f0f0f'
     if _data == '31/10': # Tema prestabilito per Halloween
         _palette = 'Red'
-    else:
-        _palette = 'Blue'
-    _text = 'black'
 ## CREO LA CONNESSIONE CON IL DATABASE
 connect = sqlite3.connect(SAF)
 cursor = connect.cursor()
@@ -228,8 +225,9 @@ class Main(MDApp):
 				title=f'VER. {ver}',
 				type='simple',
 				text='''
-- Risolti Bug versione precedente
-- Il file esportato contiene anche il totale delle ore
+- Minor BugFix
+- Possibilità di cambiare la palette a piacimento, oltre al cambio tema Light/Dark
+- Tolta la possibilità di vedere per intero la licenza, ma è possibile copiare il link dalla dialog
 ''' )
             self.dialog.open()
         elif switch == 2:
@@ -263,14 +261,23 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
             self.dialog.content_cls.ids.info.text= dial
             self.dialog.open()
         elif switch == 4:
-            try:
-                with open('.LICENSE', mode='r') as F:
-                    license = F.read()
-                self.root.ids.nav_d.set_state('close')
-                self.root.ids.gnu.text=license
-                self.root.ids.S_M.current='L'
-            except FileNotFoundError:
-                self.not_implemented(1)
+            from kivy.core.clipboard  import Clipboard
+            self.license = MDDialog(
+                title='GNU LICENSE',
+                type='custom',
+                text='https://github.com/noxsilente/StraordinApp/blob/main/LICENSE',
+                buttons=[
+                    MDFlatButton(
+                        text='COPIA',
+                        on_release=lambda x: [Clipboard.copy('https://github.com/noxsilente/StraordinApp/blob/main/LICENSE'),
+                                             Snackbar(text='Testo copiato').open()]
+                    ),
+                    MDFlatButton(
+                        text='CHIUDI',
+                        on_release=lambda x: self.license.dismiss()
+                    )
+                ])
+            self.license.open()
     def _modifica(self,x, i, G, M):
         '''
         Richiamo a una classe esterna nel file KV
@@ -281,6 +288,12 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
         :param f_v:
         :return:
         '''
+       ################################### PICCOLA PARTE PER CORREGGERE ERRORI NELLA STANDARDIZZAZIONE DEL FORMATO
+        if (int(G) < 10)and('0' not in G):
+            g=G
+            G='0'+G
+            cursor.execute(f'UPDATE straordinari SET gg =\'{G}\' WHERE gg = \'{g}\' AND mm=\'{M}\'')
+        ##########################################################################################################
         f_v = f'{G}/{M}' #standardizzo la data presa dalla funzione lambda
         value = self.mod_dialog.content_cls.ids.new_value.text # ricevo il valore dalla dialog
         i.theme_text_color = 'Custom' # modifico il colore e il testo dell Item
@@ -288,6 +301,7 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
         i.text = f'* {f_v} +{value}\n'
         # Faccio l update nel database trovando la riga con l'esatto giorno e mese
         cursor.execute(f'UPDATE straordinari SET ora = \'{int(value)}\n\' WHERE gg=\'{G}\' AND mm=\'{M}\'')
+        connect.commit()
         self.mod_dialog.dismiss()
         self.menu.dismiss()
         tot_write(self,M,1)
@@ -361,21 +375,34 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
         Chiusura del collegamento con il database e aggiornamento del file di configurazione
         :return:
         '''
-        with open(CFG, mode='w') as F: # Scrivo il file di configurazione con le impostazioni aggiornate
+        ################# RIORDINO IL DATABASE PRIMA DELLA CHIUSURA ###########
+        lista = []  ## CREO UNA LISTA TEMPORANEA
+        ## INSERISCO I VALORI (GIORNO) DEL DATABASE ORDINATI IN MODO CRESCENTE ##
+        for row in cursor.execute(f'SELECT * FROM straordinari WHERE mm={m} ORDER BY CAST(gg AS INTEGER)'):
+            data = (row[0], row[1], row[2])
+            lista.append(data)
+        ## ELIMINO I VALORI DELLA LISTA RELATIVI AL MESE CORRENTE
+        cursor.execute(f'DELETE FROM straordinari WHERE mm={m}')
+        ## RISCRIVO I VALORI IN ORDINE CRESCENTE NELLA LISTA
+        for i in lista:
+            cursor.execute('INSERT INTO straordinari VALUES (?,?,?)', i)
+        ## SALVO IL TUTTO.
+        connect.commit()
+        with open(CFG, mode='w') as F:  # Scrivo il file di configurazione con le impostazioni aggiornate
             F.write(f'''
-            <Config>
-                <theme n="" theme="{cf}">Tema</theme>
-                <ver n="" ver="{ver}">Ver</ver>                            
-                <y n="" y="{Y}">Anno</y>
-                <txt n="" _txt="">TXT Color</txt>
-                <bg n="" bg="">Background</bg> 
-            </Config>
-                    ''')
-        try:
-            cursor.close()
-        except:
-            pass
-        connect.close()
+                   <Config>
+                       <theme n="" theme="{cf}">Tema</theme>
+                       <ver n="" ver="{ver}">Ver</ver>
+                       <y n="" y="{Y}">Anno</y>
+                       <p n="" p="{_pal}">Palette</p>
+                   </Config>
+                           ''')
+
+        # try:
+        #     cursor.close()
+        # except:
+        #     pass
+        #connect.close()
     def on_start(self):
         '''
         Funzione che parte all'avvio dell'app
@@ -387,7 +414,7 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
         else:
             pass
         self.root.ids.IN_B.text_color = _text                     ####
-        self.root.ids.MDRFIB.text = _theme                          ##
+        self.root.ids.MDRFIB.text = f'Tema: {_theme}'               ##
         self.root.ids.src.text_color = _text                        ##
         self.root.ids.export.text_color = _text                     ##
         self.root.ids.MDRFIB.text_color = _text                     ## COLORAZIONI IN BASE AL TEMA
@@ -405,6 +432,8 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
         def adding():
             gg = self.add_dialog.content_cls.ids.day.text
             ora = self.add_dialog.content_cls.ids.ore.text
+            if int(gg) < 10:
+                gg = '0' + gg
             if float(ora) == 0.0:
                 self.add_dialog.content_cls.ids.ore.hint_text = 'Non valido!!'
             elif '.0' in ora:
@@ -415,8 +444,6 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
                 self.add_dialog.content_cls.ids.ore.hint_text = 'Inserisci il numero di ore'
             for row in cursor.execute(f'SELECT gg FROM straordinari WHERE mm={m}'):
                 if int(gg) != int(row[0]):
-                    if int(gg) < 10:
-                        gg= '0'+gg
                     self.add_dialog.content_cls.ids.add_l.text = f'{gg}/{m}  +{str(ora)}'
                     self.root.ids._oli_.add_widget(
                     OneLineListItem(text=f'{gg}/{m} +{ora}', theme_text_color='Custom',
@@ -470,6 +497,8 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
         '''
         global actual_day
         _temp_txt = str(self.root.ids.TXT.text)
+        if int(_temp_txt) < 10:
+            _temp_txt='0'+_temp_txt
         self.root.ids.TXT.text = ''
         if _temp_txt == '':
             return
@@ -494,46 +523,81 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
         actual_day=True
         self.root.ids._ok.text = f'+{_temp_txt}'
         tot_write(self,m,1)
-    def theme_changer(self): ### TODO Creare una pagina di scelta del tema
+    def theme_changer(self):
         '''
         Cambia automaticamente il tema appena viene selezionato, senza dover riavviare l'applicazione
-        Colori per le palette: ‘Red’, ‘Pink’, ‘Purple’, ‘DeepPurple’, ‘Indigo’, ‘Blue’, ‘LightBlue’,
-        ‘Cyan’, ‘Teal’, ‘Green’, ‘LightGreen’, ‘Lime’, ‘Yellow’, ‘Amber’, ‘Orange’, ‘DeepOrange’,
-        ‘Brown’, ‘Gray’, ‘BlueGray’.
+        Colori per le palette: 'Red', 'Pink', 'Purple', 'DeepPurple', 'Indigo', 'Blue', 'LightBlue',
+        'Cyan', 'Teal', 'Green', 'LightGreen', 'Lime', 'Yellow', 'Amber', 'Orange', 'DeepOrange',
+        'Brown', 'Gray', 'BlueGray'.
 
         :return:
         '''
-        global cf
-        if cf == 'Dark':
-            _theme = 'Light'
-            if _data == '31/10':
-                _palette = 'Red'
-            else:
-                _palette = 'Blue'
-            _text = 'black'
-            cf = 'Light'
-        elif cf == 'Light':
-            _theme = 'Dark'
-            if _data == '31/10':
-                _palette = 'Orange'
-            else:
-                _palette = 'Gray'
-            _text = 'white'
-            cf = 'Dark'
-        self.theme_cls.theme_style = _theme
-        self.theme_cls.primary_palette = _palette
-        self.root.ids.IN_B.text_color = _text
-        self.root.ids.src_tot.text_color = _text
-        self.root.ids.tot.text_color = _text
-        self.root.ids.src.text_color = _text
-        self.root.ids.export.text_color= _text
-        self.root.ids.info.text_color = _text
-        self.root.ids.MDND_.color = _text
-        self.root.ids.MDND.color = _text
-        self.root.ids.MDRFIB.text_color = _text
-        self.root.ids.MDRFIB.text = _theme
-        #self.root.ids.nav_d.set_state(new_state='close', animation=True)
-        tot_write(self, m,1,_text)
+        def color(_theme):
+            global cf
+            cf=_theme
+            if _theme=='Dark':
+                _text = '#ffffff'
+            elif _theme=='Light':
+                _text = '#000000'
+            self.theme_cls.theme_style = _theme
+            self.root.ids.MDRFIB.text = f'Tema: {_theme}'
+            self.root.ids.IN_B.text_color = _text
+            self.root.ids.src_tot.text_color = _text
+            self.root.ids.tot.text_color = _text
+            self.root.ids.src.text_color = _text
+            self.root.ids.export.text_color = _text
+            self.root.ids.info.text_color = _text
+            self.root.ids.MDND_.color = _text
+            self.root.ids.MDND.color = _text
+            self.root.ids.MDRFIB.text_color = _text
+            tot_write(self, m, 1, _text)
+            self.theme_changer()
+        def coloring(_palette):
+            global _pal
+            _pal=_palette
+            self.theme_cls.primary_palette = _palette
+            self.theme_changer()
+
+            #self.root.ids.nav_d.set_state(new_state='close', animation=True)
+        self.root.ids.nav_d.set_state('close')
+        palette=['Red', 'Pink', 'Purple', 'DeepPurple', 'Indigo', 'Blue', 'LightBlue',
+        'Cyan', 'Teal', 'Green', 'LightGreen', 'Lime', 'Yellow', 'Amber', 'Orange', 'DeepOrange',
+        'Brown', 'Gray', 'BlueGray']
+        theme_text_list = ['Rosso','Rosa','Viola','Viola Scuro','Indigo','Blu','Blu Chiaro', 'Ciano', 'Verde Acqua', 'Verde',
+                           'Verde Chiaro','Lime','Giallo','Ambra','Arancione','Arancione Scuro','Marrone','Grigio','Grigio-blu']
+        theme_list=['#ff0000', '#ffc0cb', '#800080', '#4d004d', '#4b0082', '#0000ff', '#add8e6',
+        '#00ffff', '#008080', '#008000', '#90ee90', '#00ff00', '#ffff00', '#ff9900', '#ffa500', '#d5760d',
+        '#a52a2a', '#808080', '#6b8d94']
+        self.root.ids.S_M.current='T'
+        from kivymd.uix.button import MDRectangleFlatButton
+        self.root.ids.tsv.clear_widgets()
+        for i in range(len(theme_list)):
+            self.root.ids.tsv.add_widget(MDRectangleFlatButton(line_color= (0,0,0,0), text_color=theme_list[i], text=theme_text_list[i],
+                                       on_release=lambda x, _palette=palette[i]: coloring(_palette)))
+        self.root.ids.tsv_.clear_widgets()
+        self.root.ids.tsv_.add_widget(
+            MDRectangleFlatButton(line_color=(0, 0, 0, 0), text_color='#0f0f0f', text='Dark',
+                                  on_release=lambda x, _theme='Dark': color(_theme)))
+        self.root.ids.tsv_.add_widget(
+            MDRectangleFlatButton(line_color=(0, 0, 0, 0), text_color='#f0f0f0', text='Light',
+                                  on_release=lambda x, _theme='Light': color(_theme)))
+        # global cf
+        # if cf == 'Dark':
+        #     _theme = 'Light'
+        #     if _data == '31/10':
+        #         _palette = 'Red'
+        #     else:
+        #         _palette = 'Blue'
+        #     _text = 'black'
+        #     cf = 'Light'
+        # elif cf == 'Light':
+        #     _theme = 'Dark'
+        #     if _data == '31/10':
+        #         _palette = 'Orange'
+        #     else:
+        #         _palette = 'Gray'
+        #     _text = 'white'
+        #     cf = 'Dark'
 ################################################################## MODIFICA
     def Search_export(self,value,type):
         '''

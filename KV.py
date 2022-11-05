@@ -93,29 +93,35 @@ MDNavigationLayout:
                         MDList:
                             id: _src_date
         Screen:
-            name: 'L'
+            name: 'T'
             BoxLayout:
+                id: BL
                 orientation: 'vertical'
                 pos_hint: {'x':0, 'y':-.1}
                 MDIconButton:
                     id: l_b
-                    pos_hint: {'x':.95, 'y':0}
+                    pos_hint: {'x':.85, 'y':0}
                     icon: 'arrow-u-left-top'
                     on_press: S_M.current= 'M'
-                ScrollView:
-                    do_scroll_x: False
-                    pos_hint: {'center_x':.5, 'center_y':.1}
-                    size_hint_y: 0.5
-                    size_hint_x: 1
-                    MDLabel:
-                        id: gnu
-                        size_hint_y: None
-                        size_hint_x: 1
-                        height: self.texture_size[1]
-                        text_size: self.width, None
-                
-                
-                    
+                RelativeLayout:
+                    pos: self.parent.pos
+                    ScrollView:
+                        do_scroll_x: False
+                        pos_hint: {'x':.1, 'y':.5}
+                        size_hint_x:0.3
+                        size_hint_y:0.5
+                        MDList:
+                            id: tsv
+                            size_hint_x:1
+                    ScrollView:
+                        do_scroll_x: False
+                        pos_hint: {'x':.5, 'y':.5}
+                        size_hint_x:0.3
+                        size_hint_y:0.5
+                        MDList:
+                            id: tsv_
+                            size_hint_x:1
+             
     MDNavigationDrawer: 
         anchor: 'right'
         size_hint_x: .5
@@ -215,7 +221,7 @@ MDNavigationLayout:
     height: '60dp'
     MDTextField:
         id: new_value
-        hint_text: "Aggiungi il nuovo orario"   
+        hint_text: "Aggiungi il nuovo orario"  
 <add>
     orientation: 'vertical'
     spacing: '12dp'
@@ -272,7 +278,12 @@ MDNavigationLayout:
 
 #           STRINGHE CHE RIEMPIONO INUTILMENTE IL FILE MAIN.PY
 dial='''
-1.5 rc
+1.6 rc
+- Minor BugFix
+- Possibilità di cambiare la palette a piacimento, oltre al cambio tema Light/Dark
+- Tolta la possibilità di vedere per intero la licenza, ma è possibile copiare il link dalla dialog
+
+1.5 
 - Risolti Bug versione precedente
 - Il file esportato contiene anche il totale delle ore
 

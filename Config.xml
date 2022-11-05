@@ -1,9 +1,8 @@
 
-            <Config>
-                <theme n="" theme="Dark">Tema</theme>
-                <ver n="" ver="1.4">Ver</ver>                            
-                <y n="" y="2022">Anno</y>
-                <txt n="" _txt="">TXT Color</txt>
-                <bg n="" bg="">Background</bg> 
-            </Config>
-                    
+                   <Config>
+                       <theme n="" theme="Dark">Tema</theme>
+                       <ver n="" ver="1.6">Ver</ver>
+                       <y n="" y="2022">Anno</y>
+                       <p n="" p="DeepPurple">Palette</p>
+                   </Config>
+                           
