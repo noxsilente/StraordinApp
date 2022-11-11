@@ -1,4 +1,4 @@
-# StraordinApp ![alt text](SA+1.ico)
+# StraordinApp 
 ## App per la gestione dei straordinari
 
 Il file principale  main.py è strettamente collegato con KV.py
@@ -10,3 +10,7 @@ Lavori futuri:<br>
 - [x] Creare una page per la personalizzazione del tema<br>
 - [ ] Creare un sistema di backup <br><br><br>
 Il file *[Main]* va rinominato in '*Main*' per utilizzarlo con buildozer (contiene le parti già decommentate ed il codice è più pulito)
+
+
+
+![alt text](SA+1.png)
