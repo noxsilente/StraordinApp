@@ -250,13 +250,22 @@ MDNavigationLayout:
     spacing: '12dp'
     size_hint_y: None
     height: '120dp'
-    ScrollView:
-        do_scroll_x: False
-        pos_hint: {'x':0, 'y':.2}
-        size_hint_y: 0.5
-        size_hint_x: 0.7
-        MDList:
-            id: Cerca_list
+    GridLayout:
+        cols: 2
+        ScrollView:
+            do_scroll_x: False
+            #pos_hint: {'x':0, 'y':.2}
+            size_hint_x: 0.3
+            size_hint_y: 0.7
+            MDList:
+                id: Cerca_list
+        ScrollView:
+            do_scroll_x: False
+            #pos_hint: {'x':.5,'y':.6}
+            size_hint_x: 0.3
+            size_hint_y: 0.7
+            MDList:
+                id: Cerca_anno
 
 <info>
     orientation: 'vertical'
@@ -278,7 +287,11 @@ MDNavigationLayout:
 
 #           STRINGHE CHE RIEMPIONO INUTILMENTE IL FILE MAIN.PY
 dial='''
-1.6 rc
+1.6.5 rc
+- Fix alcuni bug
+- Aggiunta possibilità di esportare database di anni precedenti (se presenti)
+
+1.6 
 - Minor BugFix
 - Possibilità di cambiare la palette a piacimento, oltre al cambio tema Light/Dark
 - Tolta la possibilità di vedere per intero la licenza, ma è possibile copiare il link dalla dialog

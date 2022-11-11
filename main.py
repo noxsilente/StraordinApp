@@ -66,7 +66,7 @@ Y = time.strftime('%Y') # ANNO ATTUALE
 ico = 'SA+1.png' # ICONA PER L'APP
 temp_ora = 0.0 # FLOAT TEMPORANEA PER L'ACQUISIZIONE DELL'ORA
 tot = 0.0 # FLOAT PER IL CALCOLO DELLE ORE TOTALI
-ver= '1.6' # MODIFICARE SOLO QUI, VERSIONE DELL'APP
+ver= '1.6.7' # MODIFICARE SOLO QUI, VERSIONE DELL'APP
 ##   CONTROLLO SE ESISTE IL FILE NELLA CARTELLA, ALTRIMENTI VERRA' CREATO
 ##   SE ESISTE GIA' LA CARTELLA, PASSA ALLA CREAZIONE ESCLUSIVA DEI FILE
 try:
@@ -225,9 +225,8 @@ class Main(MDApp):
 				title=f'VER. {ver}',
 				type='simple',
 				text='''
-- Minor BugFix
-- Possibilità di cambiare la palette a piacimento, oltre al cambio tema Light/Dark
-- Tolta la possibilità di vedere per intero la licenza, ma è possibile copiare il link dalla dialog
+- Fix alcuni bug
+- Aggiunta possibilità di esportare database di anni precedenti (se presenti)
 ''' )
             self.dialog.open()
         elif switch == 2:
@@ -300,7 +299,10 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
         i.text_color = 'magenta'
         i.text = f'* {f_v} +{value}\n'
         # Faccio l update nel database trovando la riga con l'esatto giorno e mese
-        cursor.execute(f'UPDATE straordinari SET ora = \'{int(value)}\n\' WHERE gg=\'{G}\' AND mm=\'{M}\'')
+        if '.0' in value:
+            cursor.execute(f'UPDATE straordinari SET ora = \'{int(value)}\n\' WHERE gg=\'{G}\' AND mm=\'{M}\'')
+        else:
+            cursor.execute(f'UPDATE straordinari SET ora = \'{float(value)}\n\' WHERE gg=\'{G}\' AND mm=\'{M}\'')
         connect.commit()
         self.mod_dialog.dismiss()
         self.menu.dismiss()
@@ -497,7 +499,7 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
         '''
         global actual_day
         _temp_txt = str(self.root.ids.TXT.text)
-        if int(_temp_txt) < 10:
+        if float(_temp_txt) < 10:
             _temp_txt='0'+_temp_txt
         self.root.ids.TXT.text = ''
         if _temp_txt == '':
@@ -599,7 +601,7 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
         #     _text = 'white'
         #     cf = 'Dark'
 ################################################################## MODIFICA
-    def Search_export(self,value,type):
+    def Search_export(self,value,type,yy=''):
         '''
         Trova nel database il mese in base al valore ricevuto
         :param value:
@@ -640,6 +642,22 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
                 self.d = MDDialog(title=f'{str(month_list[int(mm) - 1])}-{Y}.txt',
                                   text='FILE ESPORTATO SU MEMORIA INTERNA:\n\n/storage/emulated/0/StraordinApp/')
                 self.d.open()
+    ##### ESPORTAZIONE IN BASE ALL'ANNO
+        elif type==3: # Creazione connessione sqlite temporanea
+            # temp_db  = sqlite3.connect(f'/storage/emulated/0/StraordinApp/{yy}.db')              # <-------------
+            temp_db = sqlite3.connect(f'{yy}.db')                                                  # <-------------
+            temp_curs = temp_db.cursor()
+            tot = 0.0
+            # with open(f'/storage/emulated/0/StraordinApp/{yy}_export.txt',mode='a')             # <-------------
+            with open(f'{yy}_export.txt', mode='a') as f:                                         # <-------------
+                for row in temp_curs.execute(f'SELECT * from straordinari'):
+                    tot = tot + float(row[2])
+                    f.write(f'{row[0]}/{row[1]} +{row[2]}')
+                f.write(f'\n\n Tot. annuo: {tot}')
+            self.d = MDDialog(title=f'{yy}_export.txt',
+                              text='FILE ESPORTATO SU MEMORIA INTERNA:\n\n/storage/emulated/0/StraordinApp/')
+            self.d.open()
+
     def return_(self):
         '''
         Rimette l'icona allo stato originale, tornando alla schermata iniziale con tutte le sue variabili
@@ -654,11 +672,20 @@ ATTENZIONE: L'APP NON RICHIEDE L'ACCESSO AD INTERNET PER PRESERVARE LA PRIVACY D
         state = True # Riporto la booleana allo stato iniziale
     def date_dialog(self,id):# Istanza per aprire il dialog relativo alla ricerca per mese
         self.date_dial= MDDialog(
-            title= 'Seleziona il Mese: ',
+            title= 'Seleziona il mese o l\'anno da esportare: ',
             type= 'custom',
             content_cls=Cerca(), )
         for i in range(len(month_list)): # Aggiungo i widget con il nome del mese
             self.date_dial.content_cls.ids.Cerca_list.add_widget(OneLineListItem(text=month_list[i], on_release=lambda x, i=i, id=id: self.Search_export(i,id) ))
+        if id == 2:
+            YY=Y
+            try:
+                while True:
+                    YY = int(YY) - 1
+                    x = open(f'{YY}.db')
+                    self.date_dial.content_cls.ids.Cerca_anno.add_widget(OneLineListItem(text=str(YY), on_release= lambda x, yy=YY: self.Search_export(0,3,yy)))
+            except:
+                pass
         self.date_dial.open()
     def Nav_Change(self):
         '''
